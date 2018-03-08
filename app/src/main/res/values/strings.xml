@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">TripService</string>
+    <string name="trip_id">Trip number: %1$d</string>
+    <string name="from_city">From city: </string>
+    <string name="city_id">Id: %1$d</string>
+    <string name="city_highlight">Highlight: %1$d</string>
+    <string name="city_name">Name: %1$s</string>
+    <string name="to_city">To city: </string>
+    <string name="from_date_time">Departs on: %1$s %2$s</string>
+    <string name="to_date_time">Arrives on: %1$s %2$s</string>
+    <string name="from_info">Departure information: %1$s</string>
+    <string name="to_info">Arrival information: %1$s</string>
+    <string name="info">General information: %1$s</string>
+    <string name="price">Price: %1.2f</string>
+    <string name="bus_id">Bus number: %1d</string>
+    <string name="reservation_count">Reservation count: %1$d</string>
+    <string name="progress_message">Loading data, please, wait…</string>
+    <string name="message_empty">Trip list is empty!</string>
+</resources>

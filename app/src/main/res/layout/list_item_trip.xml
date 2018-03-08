@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:background="#fbfcfb"
+    android:orientation="horizontal"
+    android:elevation="7dp">
+
+    <LinearLayout
+        android:textSize="16sp"
+        android:paddingBottom="2dp"
+        android:paddingTop="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+
+    <TextView
+        android:id="@+id/trip_id_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:padding="2dp"
+        android:textColor="@android:color/black"
+
+        tools:text="Trip id"/>
+
+    <TextView
+        android:id="@+id/trip_from_text_view"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="11dp"
+        android:layout_weight="4"
+        android:padding="2dp"
+        tools:text="from city"
+        android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/trip_to_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_weight="4"
+            android:padding="2dp"
+            tools:text="to city"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/trip_date_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_weight="4"
+            android:padding="2dp"
+            tools:text="date"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/trip_time_text_view"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="11dp"
+            android:layout_weight="3"
+            android:padding="2dp"
+            tools:text="time"
+            android:textColor="@android:color/black"/>
+    </LinearLayout>
+
+</RelativeLayout>
