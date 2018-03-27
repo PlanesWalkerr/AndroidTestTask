@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/TripInfoTheme"
-    android:padding="10sp"
+    android:padding="5sp"
     android:background="#fbfcfb"
     android:orientation="vertical">
 

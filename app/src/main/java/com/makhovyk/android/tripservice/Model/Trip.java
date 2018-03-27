@@ -5,7 +5,12 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-public class Trip implements Serializable{
+import io.realm.RealmModel;
+import io.realm.RealmObject;
+import io.realm.annotations.RealmClass;
+
+@RealmClass
+public class Trip implements Serializable, RealmModel{
 
     @SerializedName("id")
     @Expose

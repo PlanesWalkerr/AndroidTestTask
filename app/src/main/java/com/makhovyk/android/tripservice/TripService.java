@@ -3,6 +3,7 @@ package com.makhovyk.android.tripservice;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -11,6 +12,8 @@ import com.makhovyk.android.tripservice.Model.ApiClient;
 import com.makhovyk.android.tripservice.Model.ApiResponse;
 import com.makhovyk.android.tripservice.Model.City;
 import com.makhovyk.android.tripservice.Model.DBHelper;
+import com.makhovyk.android.tripservice.Model.Helper;
+import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
 
 import java.util.ArrayList;
@@ -21,6 +24,8 @@ import java.util.Set;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 
 public class TripService extends Service {
@@ -35,15 +40,19 @@ public class TripService extends Service {
     private final String BASE_URL = "http://projects.gmoby.org/web/index.php/";
     private List<Trip> trips = new ArrayList<>();
     private Set<City> citySet = new HashSet<>();
-    private DBHelper dbHelper;
+    private Helper dbHelper;
     private SQLiteDatabase database;
     private String message = "";
     private String errorMessage = "";
+    private String DBMS;
 
     @Override
     public void onCreate() {
-        dbHelper = new DBHelper(getApplicationContext());
-        database = dbHelper.getWritableDatabase();
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder().build();
+        Realm.setDefaultConfiguration(realmConfiguration);
+        SharedPreferences settings = getSharedPreferences("DBMS",0);
+        DBMS = settings.getString("db","");
+
         super.onCreate();
     }
 
@@ -61,6 +70,7 @@ public class TripService extends Service {
         if (message.equals(RESULT_ERROR)){
             intent.putExtra(ERROR,errorMessage);
         }
+
         sendBroadcast(intent);
         super.onDestroy();
     }
@@ -102,41 +112,23 @@ public class TripService extends Service {
 
                     @Override
                     public void onComplete() {
-                        dbHelper.dropTables();
+                        dbHelper = HelperFactory.geHelper(getApplicationContext(),DBMS);
+                        if (!dbHelper.isEmpty()){
+                            dbHelper.dropTables();
+                        }
+
                         if (trips.isEmpty()){
                             message = RESULT_EMPTY;
                         }else {
 
                             // writing to the db
-                            ContentValues cv = new ContentValues();
-                            for (City c: citySet) {
-                                cv.put(DBHelper.CITY_ID,c.getCityId());
-                                cv.put(DBHelper.CITY_HIGHLIGHT,c.getHighlight());
-                                cv.put(DBHelper.CITY_NAME,c.getName());
-                                database.insert(DBHelper.TABLE_CITIES,null, cv);
-                            }
+                            //dbHelper.writeCities(citySet);
 
-                            cv = new ContentValues();
-                            for (Trip tr: trips) {
-                                cv.put(DBHelper.TRIP_ID,tr.getTripId());
-                                cv.put(DBHelper.FROM_CITY,tr.getFromCity().getCityId());
-                                cv.put(DBHelper.FROM_DATE,tr.getFromDate());
-                                cv.put(DBHelper.FROM_TIME,tr.getFromTime());
-                                cv.put(DBHelper.FROM_INFO,tr.getFromInfo());
-                                cv.put(DBHelper.TO_CITY,tr.getToCity().getCityId());
-                                cv.put(DBHelper.TO_DATE,tr.getToDate());
-                                cv.put(DBHelper.TO_TIME,tr.getToTime());
-                                cv.put(DBHelper.TO_INFO,tr.getToInfo());
-                                cv.put(DBHelper.INFO,tr.getInfo());
-                                cv.put(DBHelper.PRICE,tr.getPrice());
-                                cv.put(DBHelper.BUS_ID,tr.getBusId());
-                                cv.put(DBHelper.RESERVATION_COUNT,tr.getReservationCount());
-                                database.insert(DBHelper.TABLE_TRIPS, null, cv);
-                            }
+                            dbHelper.writeTrips(trips,citySet);
 
                             message = RESULT_OK;
                         }
-
+                        dbHelper.closeConnection();
                         stopService();
                     }
                 });

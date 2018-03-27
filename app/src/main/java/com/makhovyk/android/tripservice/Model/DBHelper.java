@@ -1,15 +1,18 @@
 package com.makhovyk.android.tripservice.Model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
-public class DBHelper extends SQLiteOpenHelper {
+public class DBHelper extends SQLiteOpenHelper implements Helper{
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "TripsDB";
@@ -65,6 +68,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public List<Trip> getAllTrips(){
+        Log.e("EE", "using sqlite");
         String sqlQuery = "select t._trip_id, c._id as from_city_id, " +
                 "c.name as from_city_name, c.highlight as from_city_hl, t.from_date, " +
                 "t.from_time, t.from_info, ct._id as to_city_id, " +
@@ -142,4 +146,102 @@ public class DBHelper extends SQLiteOpenHelper {
         db.delete(TABLE_CITIES,null,null);
         db.delete(TABLE_TRIPS,null,null);
     }
+
+    public void writeCities(Set<City> cities){
+        ContentValues cv = new ContentValues();
+        for (City c: cities) {
+            cv.put(DBHelper.CITY_ID,c.getCityId());
+            cv.put(DBHelper.CITY_HIGHLIGHT,c.getHighlight());
+            cv.put(DBHelper.CITY_NAME,c.getName());
+            this.getWritableDatabase().insert(DBHelper.TABLE_CITIES,null, cv);
+        }
+    }
+
+    @Override
+    public void writeTrips(List<Trip> trips, Set<City> cities) {
+        writeCities(cities);
+        ContentValues cv = new ContentValues();
+        for (Trip tr: trips) {
+            cv.put(DBHelper.TRIP_ID,tr.getTripId());
+            cv.put(DBHelper.FROM_CITY,tr.getFromCity().getCityId());
+            cv.put(DBHelper.FROM_DATE,tr.getFromDate());
+            cv.put(DBHelper.FROM_TIME,tr.getFromTime());
+            cv.put(DBHelper.FROM_INFO,tr.getFromInfo());
+            cv.put(DBHelper.TO_CITY,tr.getToCity().getCityId());
+            cv.put(DBHelper.TO_DATE,tr.getToDate());
+            cv.put(DBHelper.TO_TIME,tr.getToTime());
+            cv.put(DBHelper.TO_INFO,tr.getToInfo());
+            cv.put(DBHelper.INFO,tr.getInfo());
+            cv.put(DBHelper.PRICE,tr.getPrice());
+            cv.put(DBHelper.BUS_ID,tr.getBusId());
+            cv.put(DBHelper.RESERVATION_COUNT,tr.getReservationCount());
+            this.getWritableDatabase().insert(DBHelper.TABLE_TRIPS, null, cv);
+        }
+    }
+
+    @Override
+    public void closeConnection() {
+        this.close();
+    }
+
+    @Override
+    public Trip getTripById(long id) {
+        Log.e("EE", "using sqlite");
+        String sqlQuery = "select t._trip_id, c._id as from_city_id, " +
+                "c.name as from_city_name, c.highlight as from_city_hl, t.from_date, " +
+                "t.from_time, t.from_info, ct._id as to_city_id, " +
+                "ct.highlight as to_city_hl, ct.name as to_city_name, t.to_date, t.to_time, t.to_info, " +
+                "t.info, t.price, t.bus_id, t.reservation_count "
+                + "from trips as t "
+                + "inner join cities as c "
+                + "on t.from_city = c._id "
+                + "inner join cities as ct "
+                + "on t.to_city = ct._id  where _trip_id=" + id + "";
+        Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery,null);
+        Trip tr = new Trip();
+        if (tripCursor.moveToFirst()) {
+            do {
+                int idIndex = tripCursor.getColumnIndex(TRIP_ID);
+                int fromDateIndex = tripCursor.getColumnIndex(FROM_DATE);
+                int fromTimeIndex = tripCursor.getColumnIndex(FROM_TIME);
+                int fromInfoIndex = tripCursor.getColumnIndex(FROM_INFO);
+                int toDateIndex = tripCursor.getColumnIndex(TO_DATE);
+                int toTimeIndex = tripCursor.getColumnIndex(TO_TIME);
+                int toInfoIndex = tripCursor.getColumnIndex(TO_INFO);
+                int infoIndex = tripCursor.getColumnIndex(INFO);
+                int priceIndex = tripCursor.getColumnIndex(PRICE);
+                int busIdIndex = tripCursor.getColumnIndex(BUS_ID);
+                int reservationCountIndex = tripCursor.getColumnIndex(RESERVATION_COUNT);
+                int fromCityIdIndex = tripCursor.getColumnIndex("from_city_id");
+                int fromCityHlIndex = tripCursor.getColumnIndex("from_city_hl");
+                int fromCityNameIndex = tripCursor.getColumnIndex("from_city_name");
+                int toCityIdIndex = tripCursor.getColumnIndex("to_city_id");
+                int toCityHlIndex = tripCursor.getColumnIndex("to_city_hl");
+                int toCityNameIndex = tripCursor.getColumnIndex("to_city_name");
+                City c = new City();
+                City c1 = new City();
+                tr.setTripId(tripCursor.getInt(idIndex));
+                c.setCityId(tripCursor.getInt(fromCityIdIndex));
+                c.setHighlight(tripCursor.getInt(fromCityHlIndex));
+                c.setName(tripCursor.getString(fromCityNameIndex));
+                tr.setFromCity(c);
+                c1.setCityId(tripCursor.getInt(toCityIdIndex));
+                c1.setHighlight(tripCursor.getInt(toCityHlIndex));
+                c1.setName(tripCursor.getString(toCityNameIndex));
+                tr.setToCity(c1);
+                tr.setFromDate(tripCursor.getString(fromDateIndex));
+                tr.setFromTime(tripCursor.getString(fromTimeIndex));
+                tr.setFromInfo(tripCursor.getString(fromInfoIndex));
+                tr.setToDate(tripCursor.getString(toDateIndex));
+                tr.setToTime(tripCursor.getString(toTimeIndex));
+                tr.setToInfo(tripCursor.getString(toInfoIndex));
+                tr.setInfo(tripCursor.getString(infoIndex));
+                tr.setPrice(tripCursor.getDouble(priceIndex));
+                tr.setBusId(tripCursor.getInt(busIdIndex));
+                tr.setReservationCount(tripCursor.getInt(reservationCountIndex));
+            } while (tripCursor.moveToNext());
+        }
+        return tr;
+    }
+
 }

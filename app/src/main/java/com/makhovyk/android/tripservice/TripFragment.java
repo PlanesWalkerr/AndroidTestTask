@@ -1,14 +1,18 @@
 package com.makhovyk.android.tripservice;
 
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.makhovyk.android.tripservice.Model.Helper;
+import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
 
 
@@ -16,8 +20,11 @@ public class TripFragment extends Fragment {
 
     private static final String ARG_TRIP = "trip";
 
+    private String DBMS;
+
     private long id;
     private Trip trip;
+    private Helper dbHelper;
     private TextView tripIdTextView;
     private TextView fromCityIdTextView;
     private TextView fromCityHlTextView;
@@ -34,9 +41,9 @@ public class TripFragment extends Fragment {
     private TextView busIdTextView;
     private TextView reservationCountTextView;
 
-    public static TripFragment newInstance(Trip t){
+    public static TripFragment newInstance(long id){
         Bundle args = new Bundle();
-        args.putSerializable(ARG_TRIP, t);
+        args.putLong(ARG_TRIP, id);
         TripFragment fragment = new TripFragment();
         fragment.setArguments(args);
         return fragment;
@@ -45,7 +52,12 @@ public class TripFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        trip = (Trip) getArguments().getSerializable(ARG_TRIP);
+        SharedPreferences settings = getActivity().getSharedPreferences("DBMS",0);
+        DBMS = settings.getString("db","");
+        id = (long) getArguments().getLong(ARG_TRIP);
+        dbHelper = HelperFactory.geHelper(getActivity(),DBMS);
+        trip = dbHelper.getTripById(id);
+        //Log.e("EE", trip.toString());
     }
 
     @Nullable
@@ -55,7 +67,7 @@ public class TripFragment extends Fragment {
 
         Resources resources = getResources();
         tripIdTextView = v.findViewById(R.id.trip_id_text_view);
-        tripIdTextView.setText(String.format(resources.getString(R.string.trip_id),trip.getTripId()));
+        tripIdTextView.setText(String.format(resources.getString(R.string.trip_id),id));
         fromCityIdTextView =v.findViewById(R.id.from_city_id_text_view);
         fromCityIdTextView.setText(String.format(resources.getString(R.string.city_id),trip.getFromCity().getCityId()));
         fromCityHlTextView =v.findViewById(R.id.from_city_hl_text_view);

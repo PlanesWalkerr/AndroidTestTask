@@ -29,11 +29,11 @@ public class MainActivity extends AppCompatActivity implements ListFragment.Call
     public void onTripSelected(Trip trip) {
         // start single trip activity if small screen layout is used
         if (findViewById(R.id.detail_fragment_container) == null) {
-            Intent intent = TripActivity.newIntent(this, trip);
+            Intent intent = TripActivity.newIntent(this, trip.getTripId());
             startActivity(intent);
         } else {
             // show trip details in container to the right on tablet
-            Fragment newDetail = TripFragment.newInstance(trip);
+            Fragment newDetail = TripFragment.newInstance(trip.getTripId());
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.detail_fragment_container, newDetail)
                     .commit();

@@ -15,9 +15,9 @@ public class TripActivity extends AppCompatActivity{
     private static final String EXTRA_TRIP =
             "com.makhovyk.android.tripservice.trip";
 
-    public static Intent newIntent(Context packageContext, Trip trip) {
+    public static Intent newIntent(Context packageContext, long id) {
         Intent intent = new Intent(packageContext, TripActivity.class);
-        intent.putExtra(EXTRA_TRIP, trip);
+        intent.putExtra(EXTRA_TRIP, id);
         return intent;
     }
 
@@ -29,8 +29,8 @@ public class TripActivity extends AppCompatActivity{
             FragmentManager fm = getSupportFragmentManager();
             Fragment fragment = fm.findFragmentById(R.id.fragment_container);
             if (fragment == null) {
-                Trip trip = (Trip) getIntent().getSerializableExtra(EXTRA_TRIP);
-                fragment = TripFragment.newInstance(trip);
+                long id = (long) getIntent().getSerializableExtra(EXTRA_TRIP);
+                fragment = TripFragment.newInstance(id);
                 fm.beginTransaction()
                         .add(R.id.fragment_container, fragment)
                         .commit();

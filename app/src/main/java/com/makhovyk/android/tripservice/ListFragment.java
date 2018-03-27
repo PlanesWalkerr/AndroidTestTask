@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,25 +13,37 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.makhovyk.android.tripservice.Model.DBHelper;
+import com.makhovyk.android.tripservice.Model.Helper;
+import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 
 public class ListFragment extends Fragment {
 
     private BroadcastReceiver broadcastReceiver;
     private String resultMessage;
-    private DBHelper dbHelper;
+    private Helper dbHelper;
     private List<Trip> trips = new ArrayList<Trip>();
+    private String DBMS = "sqlite";
+    SharedPreferences settings;
+    SharedPreferences.Editor editor;
 
     private RecyclerView tripsRecyclerView;
 
@@ -60,7 +73,24 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
 
-        dbHelper = new DBHelper(getActivity());
+        //dbHelper = new DBHelper(getActivity());
+        //dbHelper = HelperFactory.geHelper(getActivity(), "sqlite");
+        setHasOptionsMenu(true);
+        settings = getActivity().getSharedPreferences("DBMS", 0);
+        editor = settings.edit();
+        if (settings.getString("db",null) == null){
+            editor.putString("db",DBMS);
+            editor.apply();
+            Log.e("EE", "sqlite");
+        }else {
+            DBMS = settings.getString("db","");
+        }
+
+
+        Realm.init(getActivity());
+        RealmConfiguration config = new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
+        Realm.setDefaultConfiguration(config);
+        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
 
         setRetainInstance(true);
         super.onCreate(savedInstanceState);
@@ -84,6 +114,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onRefresh() {
                 disableUI();
+                dbHelper.closeConnection();
                 getActivity().startService(new Intent(getActivity(), TripService.class));
             }
 
@@ -93,6 +124,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onReceive(Context context, Intent intent) {
                 //receiving message from service
+                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
                 resultMessage = intent.getExtras().getString(TripService.RESULT);
                 switch (resultMessage){
                     //if OK, reading data from db and setting adapter
@@ -130,20 +162,62 @@ public class ListFragment extends Fragment {
                         break;
                 }
                 enableUI();
+                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
 
             }
         };
 
         //check, if db has stored data. If no, making API request
         if (dbHelper.isEmpty()) {
+            Log.e("EE", "Empty");
             disableUI();
+            dbHelper.closeConnection();
+            dbHelper = null;
             getActivity().startService(new Intent(getActivity(), TripService.class));
         }else {
+            Log.e("EE", "not empty");
             trips = dbHelper.getAllTrips();
 
         }
+        Log.e("EE", String.valueOf(trips.size()));
         setItems(trips);
         return view;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.change_bd_menu,menu);
+        if (settings.getString("db","").equals("sqlite")) {
+            menu.getItem(0).setTitle("current db: sqlite. Change to realm");
+        }else {
+            menu.getItem(0).setTitle("current db: realm. Change to sqlite");
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menu_item_change:
+                if(settings.getString("db","").equals("sqlite")){
+                    item.setTitle("current db: realm. Change to sqlite");
+                    DBMS = "realm";
+
+                }else {
+                    item.setTitle("current db: sqlite. Change to realm");
+                    DBMS = "sqlite";
+                }
+                editor.putString("db",DBMS);
+                editor.apply();
+                dbHelper = HelperFactory.geHelper(getActivity(),DBMS);
+                disableUI();
+                dbHelper.closeConnection();
+                getActivity().startService(new Intent(getActivity(), TripService.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -160,6 +234,11 @@ public class ListFragment extends Fragment {
         getActivity().unregisterReceiver(broadcastReceiver);
     }
 
+    @Override
+    public void onDestroy() {
+        dbHelper.closeConnection();
+        super.onDestroy();
+    }
 
     public void setItems(List<Trip> trips){
         tripsRecyclerView.setAdapter(new TripAdapter(trips));
