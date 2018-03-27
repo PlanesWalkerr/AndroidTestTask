@@ -107,7 +107,7 @@ public class ListFragment extends Fragment {
             DBMS = settings.getString("db", "");
         }
 
-        FileLogger.logInFile(TAG,"current db: " + DBMS,getActivity());
+        FileLogger.logInFile(TAG, "current db: " + DBMS, getActivity());
         Realm.init(getActivity());
         RealmConfiguration config = new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(config);
@@ -127,7 +127,7 @@ public class ListFragment extends Fragment {
         tripsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         //progressMessage = view.findViewById(R.id.progress_message_text_view);
         progressMessage.setText(getResources().getString(R.string.progress_message));
-       // messageEmpty = view.findViewById(R.id.message_empty_text_view);
+        // messageEmpty = view.findViewById(R.id.message_empty_text_view);
         //swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
 
         //disabling UI and starting API request on swipe down
@@ -190,7 +190,7 @@ public class ListFragment extends Fragment {
 
         //check, if db has stored data. If no, making API request
         if (dbHelper.isEmpty()) {
-            FileLogger.logInFile(TAG,"db is empty, downloading data from server",getActivity());
+            FileLogger.logInFile(TAG, "db is empty, downloading data from server", getActivity());
             Log.e("EE", "Empty");
             disableUI();
             dbHelper.closeConnection();
@@ -198,7 +198,7 @@ public class ListFragment extends Fragment {
             getActivity().startService(new Intent(getActivity(), TripService.class));
         } else {
             Log.e("EE", "not empty");
-            FileLogger.logInFile(TAG,"db isn't empty, downloading data from db",getActivity());
+            FileLogger.logInFile(TAG, "db isn't empty, downloading data from db", getActivity());
             trips = dbHelper.getAllTrips();
 
         }
@@ -226,10 +226,10 @@ public class ListFragment extends Fragment {
                 if (settings.getString("db", "").equals("sqlite")) {
                     item.setTitle("current db: realm. Change to sqlite");
                     DBMS = "realm";
-                    FileLogger.logInFile(TAG,"changing db to realm. Downloading data from server",getActivity());
+                    FileLogger.logInFile(TAG, "changing db to realm. Downloading data from server", getActivity());
                 } else {
                     item.setTitle("current db: sqlite. Change to realm");
-                    FileLogger.logInFile(TAG,"changing db to sqlite. Downloading data from server",getActivity());
+                    FileLogger.logInFile(TAG, "changing db to sqlite. Downloading data from server", getActivity());
                     DBMS = "sqlite";
                 }
                 editor.putString("db", DBMS);

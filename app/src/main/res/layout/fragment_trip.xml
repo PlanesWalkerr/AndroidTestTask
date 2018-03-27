@@ -1,108 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:theme="@style/TripInfoTheme"
-    android:padding="5sp"
+    android:layout_marginStart="16dp"
     android:background="#fbfcfb"
-    android:orientation="vertical">
+    android:theme="@style/TripInfoTheme">
 
     <TextView
         android:id="@+id/trip_id_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="trip id" />
 
     <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/from_city"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/trip_id_text_view" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="40sp">
-
-        <TextView
-            android:id="@+id/from_city_id_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/from_city_hl_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/from_city_name_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-    </LinearLayout>
 
     <TextView
-        android:text="@string/to_city"
+        android:id="@+id/from_city_id_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginStart="40sp">
+        android:layout_marginStart="32dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        tools:text="from city id" />
 
-        <TextView
-            android:id="@+id/to_city_id_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/from_city_hl_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/from_city_id_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/from_city_id_text_view"
+        tools:text="from city hl" />
 
-        <TextView
-            android:id="@+id/to_city_hl_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/from_city_name_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/from_city_hl_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/from_city_hl_text_view"
+        tools:text="from city name" />
 
-        <TextView
-            android:id="@+id/to_city_name_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/to_city"
+        app:layout_constraintStart_toStartOf="@+id/textView"
+        app:layout_constraintTop_toBottomOf="@+id/from_city_name_text_view" />
+
+
+    <TextView
+        android:id="@+id/to_city_id_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/from_city_name_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        tools:text="to city id" />
+
+    <TextView
+        android:id="@+id/to_city_hl_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/to_city_id_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/to_city_id_text_view"
+        tools:text="to city hl" />
+
+    <TextView
+        android:id="@+id/to_city_name_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@+id/to_city_hl_text_view"
+        app:layout_constraintTop_toBottomOf="@+id/to_city_hl_text_view"
+        tools:text="to city name" />
+
 
     <TextView
         android:id="@+id/from_date_time_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/to_city_name_text_view"
+        tools:text="from date time" />
 
     <TextView
         android:id="@+id/from_info_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/from_date_time_text_view"
+        tools:text="from info" />
+
     <TextView
         android:id="@+id/to_date_time_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/from_info_text_view"
+        tools:text="to date time" />
 
     <TextView
         android:id="@+id/to_info_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/to_date_time_text_view"
+        tools:text="to info" />
+
     <TextView
         android:id="@+id/info_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/to_info_text_view"
+        tools:text="info" />
+
     <TextView
         android:id="@+id/price_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/info_text_view"
+        tools:text="price" />
+
     <TextView
         android:id="@+id/bus_id_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/price_text_view"
+        tools:text="bus id" />
+
     <TextView
         android:id="@+id/reservation_count_text_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bus_id_text_view"
+        tools:text="reservation count" />
 
-</LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

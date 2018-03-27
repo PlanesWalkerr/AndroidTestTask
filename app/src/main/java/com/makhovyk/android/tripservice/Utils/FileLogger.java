@@ -21,7 +21,7 @@ public class FileLogger {
     private static final String PATH = "sdcard/Tripslog.dat";
 
 
-    public static int logInFile(String tag, String msg, Context context){
+    public static int logInFile(String tag, String msg, Context context) {
 
         File file = new File(PATH);
         boolean res = false;
@@ -36,7 +36,7 @@ public class FileLogger {
             bw.append(timeLog).append(" (").append(tag).append(")\t").append(msg).append("\n");
             bw.close();
             result = 1;
-        }catch (IOException e){
+        } catch (IOException e) {
             //Log.e("sss", String.valueOf(res));
             e.printStackTrace();
         }
