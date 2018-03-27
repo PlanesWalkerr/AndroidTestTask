@@ -15,6 +15,7 @@ import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
+import com.makhovyk.android.tripservice.Utils.SettingsManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,8 +51,8 @@ public class TripService extends Service {
     public void onCreate() {
         RealmConfiguration realmConfiguration = new RealmConfiguration.Builder().build();
         Realm.setDefaultConfiguration(realmConfiguration);
-        SharedPreferences settings = getSharedPreferences("DBMS", 0);
-        DBMS = settings.getString("db", "");
+
+        DBMS = new SettingsManager(getApplicationContext()).getDBMS();
 
         super.onCreate();
     }

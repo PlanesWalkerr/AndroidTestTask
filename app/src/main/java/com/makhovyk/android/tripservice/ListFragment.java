@@ -32,6 +32,7 @@ import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
 import com.makhovyk.android.tripservice.Utils.FileLogger;
+import com.makhovyk.android.tripservice.Utils.SettingsManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +52,8 @@ public class ListFragment extends Fragment {
     private String resultMessage;
     private Helper dbHelper;
     private List<Trip> trips = new ArrayList<Trip>();
-    private String DBMS = "sqlite";
-    SharedPreferences settings;
-    SharedPreferences.Editor editor;
+    private String DBMS;
+    SettingsManager settings;
     private Unbinder unbinder;
 
     String[] permissions = new String[]{
@@ -97,15 +97,11 @@ public class ListFragment extends Fragment {
         //dbHelper = HelperFactory.geHelper(getActivity(), "sqlite");
         setHasOptionsMenu(true);
         checkPermissions();
-        settings = getActivity().getSharedPreferences("DBMS", 0);
-        editor = settings.edit();
-        if (settings.getString("db", null) == null) {
-            editor.putString("db", DBMS);
-            editor.apply();
-            Log.e("EE", "sqlite");
-        } else {
-            DBMS = settings.getString("db", "");
+        settings = new SettingsManager(getActivity());
+        if (settings.isEmpty()) {
+            settings.setDefault();
         }
+        DBMS = settings.getDBMS();
 
         FileLogger.logInFile(TAG, "current db: " + DBMS, getActivity());
         Realm.init(getActivity());
@@ -211,10 +207,12 @@ public class ListFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.change_bd_menu, menu);
-        if (settings.getString("db", "").equals("sqlite")) {
-            menu.getItem(0).setTitle("current db: sqlite. Change to realm");
+        if (settings.getDBMS().equals(SettingsManager.SQLITE)) {
+            menu.getItem(0).setTitle("current db: " + SettingsManager.SQLITE + "" +
+                    ". Change to " + SettingsManager.REALM);
         } else {
-            menu.getItem(0).setTitle("current db: realm. Change to sqlite");
+            menu.getItem(0).setTitle("current db: " + SettingsManager.REALM + "" +
+                    ". Change to " + SettingsManager.SQLITE);
         }
     }
 
@@ -223,17 +221,19 @@ public class ListFragment extends Fragment {
 
         switch (item.getItemId()) {
             case R.id.menu_item_change:
-                if (settings.getString("db", "").equals("sqlite")) {
-                    item.setTitle("current db: realm. Change to sqlite");
-                    DBMS = "realm";
+                if (settings.getDBMS().equals(SettingsManager.SQLITE)) {
+                    item.setTitle("current db: " + SettingsManager.REALM + "" +
+                            ". Change to " + SettingsManager.SQLITE);
+                    DBMS = SettingsManager.REALM;
                     FileLogger.logInFile(TAG, "changing db to realm. Downloading data from server", getActivity());
                 } else {
-                    item.setTitle("current db: sqlite. Change to realm");
+                    item.setTitle("current db: " + SettingsManager.SQLITE + "" +
+                            ". Change to " + SettingsManager.REALM);
                     FileLogger.logInFile(TAG, "changing db to sqlite. Downloading data from server", getActivity());
-                    DBMS = "sqlite";
+                    DBMS = SettingsManager.SQLITE;
                 }
-                editor.putString("db", DBMS);
-                editor.apply();
+                settings.setDBMS(DBMS);
+
                 dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
                 disableUI();
                 dbHelper.closeConnection();
