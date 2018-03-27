@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.makhovyk.android.tripservice.Model.Trip;
 
-public class MainActivity extends AppCompatActivity implements ListFragment.Callbacks{
+public class MainActivity extends AppCompatActivity implements ListFragment.Callbacks {
 
 
     @Override

@@ -10,7 +10,7 @@ import io.realm.RealmObject;
 import io.realm.annotations.RealmClass;
 
 @RealmClass
-public class City implements Serializable,RealmModel {
+public class City implements Serializable, RealmModel {
 
     @SerializedName("id")
     @Expose
@@ -82,6 +82,7 @@ public class City implements Serializable,RealmModel {
         int result = 1;
         result = (int) (prime * result + this.cityId);
         result = prime * result +
-                ((this.name == null) ? 0 : this.name.hashCode()); return result;
+                ((this.name == null) ? 0 : this.name.hashCode());
+        return result;
     }
 }

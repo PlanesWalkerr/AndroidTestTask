@@ -1,14 +1,18 @@
 package com.makhovyk.android.tripservice;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,15 +31,21 @@ import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
+import com.makhovyk.android.tripservice.Utils.FileLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
 
 public class ListFragment extends Fragment {
+
+    private final String TAG = "TripLog";
 
     private BroadcastReceiver broadcastReceiver;
     private String resultMessage;
@@ -44,12 +54,22 @@ public class ListFragment extends Fragment {
     private String DBMS = "sqlite";
     SharedPreferences settings;
     SharedPreferences.Editor editor;
+    private Unbinder unbinder;
 
-    private RecyclerView tripsRecyclerView;
+    String[] permissions = new String[]{
+            Manifest.permission.INTERNET,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
 
-    private TextView progressMessage;
-    private TextView messageEmpty;
-    private SwipeRefreshLayout swipeRefreshLayout;
+    @BindView(R.id.trips_recycler_view)
+    RecyclerView tripsRecyclerView;
+    @BindView(R.id.progress_message_text_view)
+    TextView progressMessage;
+    @BindView(R.id.message_empty_text_view)
+    TextView messageEmpty;
+    @BindView(R.id.swipe_refresh_layout)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     private Callbacks callbacks;
 
@@ -76,17 +96,18 @@ public class ListFragment extends Fragment {
         //dbHelper = new DBHelper(getActivity());
         //dbHelper = HelperFactory.geHelper(getActivity(), "sqlite");
         setHasOptionsMenu(true);
+        checkPermissions();
         settings = getActivity().getSharedPreferences("DBMS", 0);
         editor = settings.edit();
-        if (settings.getString("db",null) == null){
-            editor.putString("db",DBMS);
+        if (settings.getString("db", null) == null) {
+            editor.putString("db", DBMS);
             editor.apply();
             Log.e("EE", "sqlite");
-        }else {
-            DBMS = settings.getString("db","");
+        } else {
+            DBMS = settings.getString("db", "");
         }
 
-
+        FileLogger.logInFile(TAG,"current db: " + DBMS,getActivity());
         Realm.init(getActivity());
         RealmConfiguration config = new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(config);
@@ -101,13 +122,13 @@ public class ListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_list, container, false);
-
-        tripsRecyclerView = view.findViewById(R.id.trips_recycler_view);
+        unbinder = ButterKnife.bind(this, view);
+        //tripsRecyclerView = view.findViewById(R.id.trips_recycler_view);
         tripsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        progressMessage = view.findViewById(R.id.progress_message_text_view);
+        //progressMessage = view.findViewById(R.id.progress_message_text_view);
         progressMessage.setText(getResources().getString(R.string.progress_message));
-        messageEmpty = view.findViewById(R.id.message_empty_text_view);
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+       // messageEmpty = view.findViewById(R.id.message_empty_text_view);
+        //swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
 
         //disabling UI and starting API request on swipe down
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -126,7 +147,7 @@ public class ListFragment extends Fragment {
                 //receiving message from service
                 dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
                 resultMessage = intent.getExtras().getString(TripService.RESULT);
-                switch (resultMessage){
+                switch (resultMessage) {
                     //if OK, reading data from db and setting adapter
                     case TripService.RESULT_OK:
                         trips = dbHelper.getAllTrips();
@@ -134,13 +155,13 @@ public class ListFragment extends Fragment {
                         tripsRecyclerView.getAdapter().notifyDataSetChanged();
                         messageEmpty.setVisibility(View.GONE);
                         break;
-                        // if result is empty, clear list and show message
+                    // if result is empty, clear list and show message
                     case TripService.RESULT_EMPTY:
                         messageEmpty.setVisibility(View.VISIBLE);
                         trips.clear();
                         tripsRecyclerView.getAdapter().notifyDataSetChanged();
                         break;
-                        //if error, show dialog with error message and button "Try again"
+                    //if error, show dialog with error message and button "Try again"
                     case TripService.RESULT_ERROR:
                         String error = intent.getStringExtra(TripService.ERROR);
                         AlertDialog.Builder builder =
@@ -157,7 +178,7 @@ public class ListFragment extends Fragment {
 
                         builder.setCancelable(false);
                         AlertDialog dlg = builder.create();
-                        dlg.getWindow().setLayout(800,450);
+                        dlg.getWindow().setLayout(800, 450);
                         dlg.show();
                         break;
                 }
@@ -169,13 +190,15 @@ public class ListFragment extends Fragment {
 
         //check, if db has stored data. If no, making API request
         if (dbHelper.isEmpty()) {
+            FileLogger.logInFile(TAG,"db is empty, downloading data from server",getActivity());
             Log.e("EE", "Empty");
             disableUI();
             dbHelper.closeConnection();
             dbHelper = null;
             getActivity().startService(new Intent(getActivity(), TripService.class));
-        }else {
+        } else {
             Log.e("EE", "not empty");
+            FileLogger.logInFile(TAG,"db isn't empty, downloading data from db",getActivity());
             trips = dbHelper.getAllTrips();
 
         }
@@ -187,10 +210,10 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.change_bd_menu,menu);
-        if (settings.getString("db","").equals("sqlite")) {
+        inflater.inflate(R.menu.change_bd_menu, menu);
+        if (settings.getString("db", "").equals("sqlite")) {
             menu.getItem(0).setTitle("current db: sqlite. Change to realm");
-        }else {
+        } else {
             menu.getItem(0).setTitle("current db: realm. Change to sqlite");
         }
     }
@@ -200,17 +223,18 @@ public class ListFragment extends Fragment {
 
         switch (item.getItemId()) {
             case R.id.menu_item_change:
-                if(settings.getString("db","").equals("sqlite")){
+                if (settings.getString("db", "").equals("sqlite")) {
                     item.setTitle("current db: realm. Change to sqlite");
                     DBMS = "realm";
-
-                }else {
+                    FileLogger.logInFile(TAG,"changing db to realm. Downloading data from server",getActivity());
+                } else {
                     item.setTitle("current db: sqlite. Change to realm");
+                    FileLogger.logInFile(TAG,"changing db to sqlite. Downloading data from server",getActivity());
                     DBMS = "sqlite";
                 }
-                editor.putString("db",DBMS);
+                editor.putString("db", DBMS);
                 editor.apply();
-                dbHelper = HelperFactory.geHelper(getActivity(),DBMS);
+                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
                 disableUI();
                 dbHelper.closeConnection();
                 getActivity().startService(new Intent(getActivity(), TripService.class));
@@ -224,7 +248,7 @@ public class ListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         // registering receiver to get data from service
-        getActivity().registerReceiver(broadcastReceiver,new IntentFilter(TripService.NOTIFICATION));
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(TripService.NOTIFICATION));
     }
 
 
@@ -238,47 +262,49 @@ public class ListFragment extends Fragment {
     public void onDestroy() {
         dbHelper.closeConnection();
         super.onDestroy();
+        unbinder.unbind();
     }
 
-    public void setItems(List<Trip> trips){
+    public void setItems(List<Trip> trips) {
         tripsRecyclerView.setAdapter(new TripAdapter(trips));
     }
 
     //disable UI while performing API request
-    public void disableUI(){
+    public void disableUI() {
         progressMessage.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(true);
         getActivity().getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
-    public void enableUI(){
+    public void enableUI() {
         progressMessage.setVisibility(View.GONE);
         swipeRefreshLayout.setRefreshing(false);
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
-    private class TripHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    class TripHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        private TextView tripIdTextView;
-        private TextView tripFromTextView;
-        private TextView tripToTextView;
-        private TextView tripDateTextView;
-        private TextView tripTimeTextView;
+        @BindView(R.id.trip_id_text_view)
+        TextView tripIdTextView;
+        @BindView(R.id.trip_from_text_view)
+        TextView tripFromTextView;
+        @BindView(R.id.trip_to_text_view)
+        TextView tripToTextView;
+        @BindView(R.id.trip_date_text_view)
+        TextView tripDateTextView;
+        @BindView(R.id.trip_time_text_view)
+        TextView tripTimeTextView;
 
         private Trip trip;
 
         public TripHolder(View itemView) {
             super(itemView);
-            tripIdTextView = itemView.findViewById(R.id.trip_id_text_view);
-            tripFromTextView = itemView.findViewById(R.id.trip_from_text_view);
-            tripToTextView = itemView.findViewById(R.id.trip_to_text_view);
-            tripDateTextView = itemView.findViewById(R.id.trip_date_text_view);
-            tripTimeTextView = itemView.findViewById(R.id.trip_time_text_view);
+            ButterKnife.bind(this, itemView);
             itemView.setOnClickListener(this);
         }
 
-        void bindTrip( Trip trip){
+        void bindTrip(Trip trip) {
             tripIdTextView.setText(String.valueOf(trip.getTripId()));
             tripFromTextView.setText(trip.getFromCity().getName());
             tripToTextView.setText(trip.getToCity().getName());
@@ -294,7 +320,7 @@ public class ListFragment extends Fragment {
         }
     }
 
-    private class TripAdapter extends RecyclerView.Adapter<TripHolder>{
+    private class TripAdapter extends RecyclerView.Adapter<TripHolder> {
 
         private List<Trip> trips;
 
@@ -306,7 +332,7 @@ public class ListFragment extends Fragment {
         public TripHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
             LayoutInflater inflater = getLayoutInflater();
-            View v = inflater.inflate(R.layout.list_item_trip,parent,false);
+            View v = inflater.inflate(R.layout.list_item_trip, parent, false);
             return new TripHolder(v);
         }
 
@@ -319,6 +345,33 @@ public class ListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return trips.size();
+        }
+    }
+
+    private boolean checkPermissions() {
+        int result;
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String p : permissions) {
+            result = ContextCompat.checkSelfPermission(getActivity(), p);
+            if (result != PackageManager.PERMISSION_GRANTED) {
+                listPermissionsNeeded.add(p);
+            }
+        }
+        if (!listPermissionsNeeded.isEmpty()) {
+            ActivityCompat.requestPermissions(getActivity(), listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]), 100);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == 100) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // do something
+            }
+            return;
         }
     }
 

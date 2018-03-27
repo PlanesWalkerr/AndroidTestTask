@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.makhovyk.android.tripservice.Model.Trip;
 
 
-public class TripActivity extends AppCompatActivity{
+public class TripActivity extends AppCompatActivity {
 
     private static final String EXTRA_TRIP =
             "com.makhovyk.android.tripservice.trip";
@@ -21,24 +21,24 @@ public class TripActivity extends AppCompatActivity{
         return intent;
     }
 
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_main);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            FragmentManager fm = getSupportFragmentManager();
-            Fragment fragment = fm.findFragmentById(R.id.fragment_container);
-            if (fragment == null) {
-                long id = (long) getIntent().getSerializableExtra(EXTRA_TRIP);
-                fragment = TripFragment.newInstance(id);
-                fm.beginTransaction()
-                        .add(R.id.fragment_container, fragment)
-                        .commit();
-            }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
+        if (fragment == null) {
+            long id = (long) getIntent().getSerializableExtra(EXTRA_TRIP);
+            fragment = TripFragment.newInstance(id);
+            fm.beginTransaction()
+                    .add(R.id.fragment_container, fragment)
+                    .commit();
         }
+    }
 
     @Override
-    public boolean onSupportNavigateUp(){
+    public boolean onSupportNavigateUp() {
         finish();
         return true;
     }

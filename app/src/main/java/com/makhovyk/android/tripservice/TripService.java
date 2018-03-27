@@ -50,8 +50,8 @@ public class TripService extends Service {
     public void onCreate() {
         RealmConfiguration realmConfiguration = new RealmConfiguration.Builder().build();
         Realm.setDefaultConfiguration(realmConfiguration);
-        SharedPreferences settings = getSharedPreferences("DBMS",0);
-        DBMS = settings.getString("db","");
+        SharedPreferences settings = getSharedPreferences("DBMS", 0);
+        DBMS = settings.getString("db", "");
 
         super.onCreate();
     }
@@ -66,9 +66,9 @@ public class TripService extends Service {
     public void onDestroy() {
         //sending the result message
         Intent intent = new Intent(NOTIFICATION);
-        intent.putExtra(RESULT,message);
-        if (message.equals(RESULT_ERROR)){
-            intent.putExtra(ERROR,errorMessage);
+        intent.putExtra(RESULT, message);
+        if (message.equals(RESULT_ERROR)) {
+            intent.putExtra(ERROR, errorMessage);
         }
 
         sendBroadcast(intent);
@@ -112,19 +112,19 @@ public class TripService extends Service {
 
                     @Override
                     public void onComplete() {
-                        dbHelper = HelperFactory.geHelper(getApplicationContext(),DBMS);
-                        if (!dbHelper.isEmpty()){
+                        dbHelper = HelperFactory.geHelper(getApplicationContext(), DBMS);
+                        if (!dbHelper.isEmpty()) {
                             dbHelper.dropTables();
                         }
 
-                        if (trips.isEmpty()){
+                        if (trips.isEmpty()) {
                             message = RESULT_EMPTY;
-                        }else {
+                        } else {
 
                             // writing to the db
                             //dbHelper.writeCities(citySet);
 
-                            dbHelper.writeTrips(trips,citySet);
+                            dbHelper.writeTrips(trips, citySet);
 
                             message = RESULT_OK;
                         }
@@ -134,7 +134,7 @@ public class TripService extends Service {
                 });
     }
 
-    void stopService(){
+    void stopService() {
         this.stopSelf();
     }
 }

@@ -72,7 +72,7 @@ public class RealmDBHelper implements Helper {
     public Trip getTripById(long id) {
         Log.e("EE", "using realm");
         realm.beginTransaction();
-        Trip t = realm.where(Trip.class).equalTo("tripId",id).findFirst();
+        Trip t = realm.where(Trip.class).equalTo("tripId", id).findFirst();
         realm.commitTransaction();
         return t;
     }

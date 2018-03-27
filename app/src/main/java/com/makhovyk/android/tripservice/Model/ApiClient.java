@@ -32,7 +32,7 @@ public class ApiClient {
         mApiService = retrofit.create(ApiService.class);
     }
 
-    public Observable<ApiResponse> getTrips(String fromDate, String toDate){
-        return mApiService.getTrips(fromDate,toDate);
+    public Observable<ApiResponse> getTrips(String fromDate, String toDate) {
+        return mApiService.getTrips(fromDate, toDate);
     }
 }

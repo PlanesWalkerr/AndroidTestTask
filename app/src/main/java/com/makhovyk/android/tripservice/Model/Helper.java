@@ -9,9 +9,14 @@ import java.util.Set;
 
 public interface Helper {
     public boolean isEmpty();
+
     public void dropTables();
+
     public List<Trip> getAllTrips();
-    public void writeTrips(List<Trip> trips,Set<City> cities);
+
+    public void writeTrips(List<Trip> trips, Set<City> cities);
+
     public void closeConnection();
+
     public Trip getTripById(long id);
 }

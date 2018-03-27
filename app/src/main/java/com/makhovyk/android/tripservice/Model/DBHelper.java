@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class DBHelper extends SQLiteOpenHelper implements Helper{
+public class DBHelper extends SQLiteOpenHelper implements Helper {
 
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "TripsDB";
@@ -38,7 +38,6 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
     public static final String RESERVATION_COUNT = "reservation_count";
 
 
-
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -62,12 +61,12 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-        sqLiteDatabase.execSQL("drop table if exists "+ TABLE_CITIES);
-        sqLiteDatabase.execSQL("drop table if exists "+ TABLE_TRIPS);
+        sqLiteDatabase.execSQL("drop table if exists " + TABLE_CITIES);
+        sqLiteDatabase.execSQL("drop table if exists " + TABLE_TRIPS);
         onCreate(sqLiteDatabase);
     }
 
-    public List<Trip> getAllTrips(){
+    public List<Trip> getAllTrips() {
         Log.e("EE", "using sqlite");
         String sqlQuery = "select t._trip_id, c._id as from_city_id, " +
                 "c.name as from_city_name, c.highlight as from_city_hl, t.from_date, " +
@@ -79,7 +78,7 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
                 + "on t.from_city = c._id "
                 + "inner join cities as ct "
                 + "on t.to_city = ct._id ";
-        Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery,null);
+        Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery, null);
         List<Trip> trips = new ArrayList<Trip>();
         if (tripCursor.moveToFirst()) {
             do {
@@ -129,11 +128,10 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
         return trips;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         Cursor cursor = this.getReadableDatabase().rawQuery("SELECT * FROM " + TABLE_TRIPS, null);
         boolean res = true;
-        if (cursor.moveToFirst())
-        {
+        if (cursor.moveToFirst()) {
             res = false;
         }
 
@@ -141,19 +139,19 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
         return res;
     }
 
-    public void dropTables(){
+    public void dropTables() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_CITIES,null,null);
-        db.delete(TABLE_TRIPS,null,null);
+        db.delete(TABLE_CITIES, null, null);
+        db.delete(TABLE_TRIPS, null, null);
     }
 
-    public void writeCities(Set<City> cities){
+    public void writeCities(Set<City> cities) {
         ContentValues cv = new ContentValues();
-        for (City c: cities) {
-            cv.put(DBHelper.CITY_ID,c.getCityId());
-            cv.put(DBHelper.CITY_HIGHLIGHT,c.getHighlight());
-            cv.put(DBHelper.CITY_NAME,c.getName());
-            this.getWritableDatabase().insert(DBHelper.TABLE_CITIES,null, cv);
+        for (City c : cities) {
+            cv.put(DBHelper.CITY_ID, c.getCityId());
+            cv.put(DBHelper.CITY_HIGHLIGHT, c.getHighlight());
+            cv.put(DBHelper.CITY_NAME, c.getName());
+            this.getWritableDatabase().insert(DBHelper.TABLE_CITIES, null, cv);
         }
     }
 
@@ -161,20 +159,20 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
     public void writeTrips(List<Trip> trips, Set<City> cities) {
         writeCities(cities);
         ContentValues cv = new ContentValues();
-        for (Trip tr: trips) {
-            cv.put(DBHelper.TRIP_ID,tr.getTripId());
-            cv.put(DBHelper.FROM_CITY,tr.getFromCity().getCityId());
-            cv.put(DBHelper.FROM_DATE,tr.getFromDate());
-            cv.put(DBHelper.FROM_TIME,tr.getFromTime());
-            cv.put(DBHelper.FROM_INFO,tr.getFromInfo());
-            cv.put(DBHelper.TO_CITY,tr.getToCity().getCityId());
-            cv.put(DBHelper.TO_DATE,tr.getToDate());
-            cv.put(DBHelper.TO_TIME,tr.getToTime());
-            cv.put(DBHelper.TO_INFO,tr.getToInfo());
-            cv.put(DBHelper.INFO,tr.getInfo());
-            cv.put(DBHelper.PRICE,tr.getPrice());
-            cv.put(DBHelper.BUS_ID,tr.getBusId());
-            cv.put(DBHelper.RESERVATION_COUNT,tr.getReservationCount());
+        for (Trip tr : trips) {
+            cv.put(DBHelper.TRIP_ID, tr.getTripId());
+            cv.put(DBHelper.FROM_CITY, tr.getFromCity().getCityId());
+            cv.put(DBHelper.FROM_DATE, tr.getFromDate());
+            cv.put(DBHelper.FROM_TIME, tr.getFromTime());
+            cv.put(DBHelper.FROM_INFO, tr.getFromInfo());
+            cv.put(DBHelper.TO_CITY, tr.getToCity().getCityId());
+            cv.put(DBHelper.TO_DATE, tr.getToDate());
+            cv.put(DBHelper.TO_TIME, tr.getToTime());
+            cv.put(DBHelper.TO_INFO, tr.getToInfo());
+            cv.put(DBHelper.INFO, tr.getInfo());
+            cv.put(DBHelper.PRICE, tr.getPrice());
+            cv.put(DBHelper.BUS_ID, tr.getBusId());
+            cv.put(DBHelper.RESERVATION_COUNT, tr.getReservationCount());
             this.getWritableDatabase().insert(DBHelper.TABLE_TRIPS, null, cv);
         }
     }
@@ -197,7 +195,7 @@ public class DBHelper extends SQLiteOpenHelper implements Helper{
                 + "on t.from_city = c._id "
                 + "inner join cities as ct "
                 + "on t.to_city = ct._id  where _trip_id=" + id + "";
-        Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery,null);
+        Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery, null);
         Trip tr = new Trip();
         if (tripCursor.moveToFirst()) {
             do {
