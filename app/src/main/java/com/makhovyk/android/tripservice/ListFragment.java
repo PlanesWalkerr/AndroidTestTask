@@ -27,6 +27,9 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
@@ -40,6 +43,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
@@ -72,6 +76,7 @@ public class ListFragment extends Fragment {
     SwipeRefreshLayout swipeRefreshLayout;
 
     private Callbacks callbacks;
+    private Tracker tracker;
 
     // callback to start activity with trip details
     public interface Callbacks {
@@ -95,6 +100,12 @@ public class ListFragment extends Fragment {
 
         //dbHelper = new DBHelper(getActivity());
         //dbHelper = HelperFactory.geHelper(getActivity(), "sqlite");
+        // Obtain the shared Tracker instance.
+        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        tracker = application.getDefaultTracker();
+
+        Fabric.with(getActivity(), new Crashlytics());
+
         setHasOptionsMenu(true);
         checkPermissions();
         settings = new SettingsManager(getActivity());
@@ -247,6 +258,13 @@ public class ListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        tracker.setScreenName("Trip List");
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+        tracker.send(new HitBuilders.EventBuilder()
+                .setCategory("Action")
+                .setAction("Share")
+                .build());
+
         // registering receiver to get data from service
         getActivity().registerReceiver(broadcastReceiver, new IntentFilter(TripService.NOTIFICATION));
     }
@@ -316,6 +334,7 @@ public class ListFragment extends Fragment {
         @Override
         public void onClick(View view) {
             //show detail info about selected trip
+            Log.i(TAG, "Trip selected");
             callbacks.onTripSelected(trip);
         }
     }

@@ -9,8 +9,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.Trip;
@@ -18,6 +20,7 @@ import com.makhovyk.android.tripservice.Utils.SettingsManager;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.fabric.sdk.android.Fabric;
 
 
 public class TripFragment extends Fragment {
@@ -70,6 +73,9 @@ public class TripFragment extends Fragment {
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
+        Fabric.with(getActivity(), new Crashlytics());
+
         super.onCreate(savedInstanceState);
         SettingsManager settings = new SettingsManager(getActivity());
         DBMS = settings.getDBMS();
@@ -104,4 +110,6 @@ public class TripFragment extends Fragment {
 
         return v;
     }
+
+
 }
