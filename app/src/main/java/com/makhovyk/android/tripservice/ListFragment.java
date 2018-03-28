@@ -33,9 +33,13 @@ import com.google.android.gms.analytics.Tracker;
 import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
+import com.makhovyk.android.tripservice.Model.MessageEvent;
 import com.makhovyk.android.tripservice.Model.Trip;
 import com.makhovyk.android.tripservice.Utils.FileLogger;
 import com.makhovyk.android.tripservice.Utils.SettingsManager;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,52 +152,6 @@ public class ListFragment extends Fragment {
 
         });
 
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //receiving message from service
-                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
-                resultMessage = intent.getExtras().getString(TripService.RESULT);
-                switch (resultMessage) {
-                    //if OK, reading data from db and setting adapter
-                    case TripService.RESULT_OK:
-                        trips = dbHelper.getAllTrips();
-                        setItems(trips);
-                        tripsRecyclerView.getAdapter().notifyDataSetChanged();
-                        messageEmpty.setVisibility(View.GONE);
-                        break;
-                    // if result is empty, clear list and show message
-                    case TripService.RESULT_EMPTY:
-                        messageEmpty.setVisibility(View.VISIBLE);
-                        trips.clear();
-                        tripsRecyclerView.getAdapter().notifyDataSetChanged();
-                        break;
-                    //if error, show dialog with error message and button "Try again"
-                    case TripService.RESULT_ERROR:
-                        String error = intent.getStringExtra(TripService.ERROR);
-                        AlertDialog.Builder builder =
-                                new AlertDialog.Builder(getActivity(), R.style.AppTheme);
-                        builder.setTitle("Something went wrong");
-                        builder.setMessage("Network error. Check yout Internet connection and try again");
-                        builder.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                disableUI();
-                                getActivity().startService(new Intent(getActivity(), TripService.class));
-                            }
-                        });
-
-                        builder.setCancelable(false);
-                        AlertDialog dlg = builder.create();
-                        dlg.getWindow().setLayout(800, 450);
-                        dlg.show();
-                        break;
-                }
-                enableUI();
-                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
-
-            }
-        };
 
         //check, if db has stored data. If no, making API request
         if (dbHelper.isEmpty()) {
@@ -266,14 +224,14 @@ public class ListFragment extends Fragment {
                 .build());
 
         // registering receiver to get data from service
-        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(TripService.NOTIFICATION));
+        //  getActivity().registerReceiver(broadcastReceiver, new IntentFilter(TripService.NOTIFICATION));
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().unregisterReceiver(broadcastReceiver);
+        // getActivity().unregisterReceiver(broadcastReceiver);
     }
 
     @Override
@@ -394,4 +352,59 @@ public class ListFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe
+    public void onEvent(MessageEvent event) {
+        //receiving message from service
+        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+        resultMessage = event.message;
+        switch (resultMessage) {
+            //if OK, reading data from db and setting adapter
+            case TripService.RESULT_OK:
+                trips = dbHelper.getAllTrips();
+                setItems(trips);
+                tripsRecyclerView.getAdapter().notifyDataSetChanged();
+                messageEmpty.setVisibility(View.GONE);
+                break;
+            // if result is empty, clear list and show message
+            case TripService.RESULT_EMPTY:
+                messageEmpty.setVisibility(View.VISIBLE);
+                trips.clear();
+                tripsRecyclerView.getAdapter().notifyDataSetChanged();
+                break;
+            //if error, show dialog with error message and button "Try again"
+            case TripService.RESULT_ERROR:
+                String error = event.errorMessage;
+                AlertDialog.Builder builder =
+                        new AlertDialog.Builder(getActivity(), R.style.AppTheme);
+                builder.setTitle("Something went wrong");
+                builder.setMessage("Network error. Check yout Internet connection and try again");
+                builder.setPositiveButton("Try Again", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        disableUI();
+                        getActivity().startService(new Intent(getActivity(), TripService.class));
+                    }
+                });
+
+                builder.setCancelable(false);
+                AlertDialog dlg = builder.create();
+                dlg.getWindow().setLayout(800, 450);
+                dlg.show();
+                break;
+        }
+        enableUI();
+        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+    }
 }

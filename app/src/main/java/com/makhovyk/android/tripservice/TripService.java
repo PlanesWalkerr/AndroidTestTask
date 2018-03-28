@@ -14,8 +14,11 @@ import com.makhovyk.android.tripservice.Model.City;
 import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
+import com.makhovyk.android.tripservice.Model.MessageEvent;
 import com.makhovyk.android.tripservice.Model.Trip;
 import com.makhovyk.android.tripservice.Utils.SettingsManager;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,18 +34,14 @@ import io.realm.RealmConfiguration;
 
 public class TripService extends Service {
 
-    public static final String NOTIFICATION = "com.makhovyk.android.tripservice.receiver";
-    public static final String RESULT = "result";
     public static final String RESULT_OK = "0";
     public static final String RESULT_ERROR = "1";
     public static final String RESULT_EMPTY = "2";
-    public static final String ERROR = "error";
 
     private final String BASE_URL = "http://projects.gmoby.org/web/index.php/";
     private List<Trip> trips = new ArrayList<>();
     private Set<City> citySet = new HashSet<>();
     private Helper dbHelper;
-    private SQLiteDatabase database;
     private String message = "";
     private String errorMessage = "";
     private String DBMS;
@@ -66,13 +65,7 @@ public class TripService extends Service {
     @Override
     public void onDestroy() {
         //sending the result message
-        Intent intent = new Intent(NOTIFICATION);
-        intent.putExtra(RESULT, message);
-        if (message.equals(RESULT_ERROR)) {
-            intent.putExtra(ERROR, errorMessage);
-        }
-
-        sendBroadcast(intent);
+        EventBus.getDefault().post(new MessageEvent(message, errorMessage));
         super.onDestroy();
     }
 
