@@ -3,6 +3,8 @@ package com.makhovyk.android.tripservice.Model;
 import android.content.Context;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,9 +41,10 @@ public class RealmDBHelper implements Helper {
     }
 
     @Override
-    public List<Trip> getAllTrips() {
+    public ArrayList<Trip> getAllTrips() {
         Log.e("EE", "using realm");
-        return realm.where(Trip.class).findAll();
+        ArrayList<Trip> list = new ArrayList(realm.where(Trip.class).findAll());
+        return list;
 
     }
 
@@ -55,7 +58,7 @@ public class RealmDBHelper implements Helper {
     }
 
     @Override
-    public void writeTrips(List<Trip> trips, Set<City> cities) {
+    public void writeTrips(ArrayList<Trip> trips, Set<City> cities) {
         for (Trip t : trips) {
             realm.beginTransaction();
             realm.copyToRealm(t);

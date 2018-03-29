@@ -3,6 +3,7 @@ package com.makhovyk.android.tripservice.Model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApiResponse {
@@ -11,13 +12,13 @@ public class ApiResponse {
     private boolean success;
     @SerializedName("data")
     @Expose
-    private List<Trip> trips;
+    private ArrayList<Trip> trips;
 
     public boolean isSuccess() {
         return success;
     }
 
-    public List<Trip> getTrips() {
+    public ArrayList<Trip> getTrips() {
         return trips;
     }
 }

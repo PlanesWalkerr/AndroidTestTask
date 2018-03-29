@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -52,10 +53,11 @@ import io.realm.RealmConfiguration;
 public class ListFragment extends Fragment {
 
     private final String TAG = "TripLog";
+    private final String TRIP_LIST_KEY = "TripsList";
 
     private String resultMessage;
     private Helper dbHelper;
-    private List<Trip> trips = new ArrayList<Trip>();
+    private ArrayList<Trip> trips = new ArrayList<Trip>();
     private String DBMS;
     SettingsManager settings;
     private Unbinder unbinder;
@@ -78,6 +80,7 @@ public class ListFragment extends Fragment {
     private Callbacks callbacks;
     private Tracker tracker;
     TripServiceApp application;
+    private boolean orientationChange = false;
 
     // callback to start activity with trip details
     public interface Callbacks {
@@ -144,20 +147,29 @@ public class ListFragment extends Fragment {
         //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
         dbHelper = application.getHelper(DBMS);
 
+        if (savedInstanceState != null) {
+            orientationChange = false;
+            trips = savedInstanceState.getParcelableArrayList(TRIP_LIST_KEY);
+            dbHelper = application.getHelper(DBMS);
+            Log.e("EE", String.valueOf(trips.size()));
+            Log.e("EE", "retriving");
 
-        //check, if db has stored data. If no, making API request
-        if (dbHelper.isEmpty()) {
-            FileLogger.logInFile(TAG, "db is empty, downloading data from server", getActivity());
-            Log.e("EE", "Empty");
-            disableUI();
-            dbHelper.closeConnection();
-            //dbHelper = null;
-            getActivity().startService(new Intent(getActivity(), TripService.class));
+
         } else {
-            Log.e("EE", "not empty");
-            FileLogger.logInFile(TAG, "db isn't empty, downloading data from db", getActivity());
-            trips = dbHelper.getAllTrips();
+            //check, if db has stored data. If no, making API request
+            if (dbHelper.isEmpty()) {
+                FileLogger.logInFile(TAG, "db is empty, downloading data from server", getActivity());
+                Log.e("EE", "Empty");
+                disableUI();
+                dbHelper.closeConnection();
+                //dbHelper = null;
+                getActivity().startService(new Intent(getActivity(), TripService.class));
+            } else {
+                Log.e("EE", "not empty");
+                FileLogger.logInFile(TAG, "db isn't empty, downloading data from db", getActivity());
+                trips = dbHelper.getAllTrips();
 
+            }
         }
         Log.e("EE", String.valueOf(trips.size()));
         setItems(trips);
@@ -226,12 +238,14 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        dbHelper.closeConnection();
+        if (!orientationChange) {
+            dbHelper.closeConnection();
+        }
         super.onDestroy();
         unbinder.unbind();
     }
 
-    public void setItems(List<Trip> trips) {
+    public void setItems(ArrayList<Trip> trips) {
         tripsRecyclerView.setAdapter(new TripAdapter(trips));
     }
 
@@ -289,9 +303,9 @@ public class ListFragment extends Fragment {
 
     private class TripAdapter extends RecyclerView.Adapter<TripHolder> {
 
-        private List<Trip> trips;
+        private ArrayList<Trip> trips;
 
-        public TripAdapter(List<Trip> trips) {
+        public TripAdapter(ArrayList<Trip> trips) {
             this.trips = trips;
         }
 
@@ -396,5 +410,12 @@ public class ListFragment extends Fragment {
         }
         enableUI();
         //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(TRIP_LIST_KEY, trips);
+        orientationChange = true;
     }
 }

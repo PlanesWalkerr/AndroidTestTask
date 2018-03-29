@@ -1,5 +1,8 @@
 package com.makhovyk.android.tripservice.Model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -10,7 +13,7 @@ import io.realm.RealmObject;
 import io.realm.annotations.RealmClass;
 
 @RealmClass
-public class Trip implements Serializable, RealmModel {
+public class Trip implements Serializable, Parcelable, RealmModel {
 
     @SerializedName("id")
     @Expose
@@ -65,6 +68,34 @@ public class Trip implements Serializable, RealmModel {
         this.busId = busId;
         this.reservationCount = reservationCount;
     }
+
+    protected Trip(Parcel in) {
+        tripId = in.readLong();
+        fromCity = in.readParcelable(City.class.getClassLoader());
+        fromDate = in.readString();
+        fromTime = in.readString();
+        fromInfo = in.readString();
+        toCity = in.readParcelable(City.class.getClassLoader());
+        toDate = in.readString();
+        toTime = in.readString();
+        toInfo = in.readString();
+        info = in.readString();
+        price = in.readDouble();
+        busId = in.readInt();
+        reservationCount = in.readInt();
+    }
+
+    public static final Creator<Trip> CREATOR = new Creator<Trip>() {
+        @Override
+        public Trip createFromParcel(Parcel in) {
+            return new Trip(in);
+        }
+
+        @Override
+        public Trip[] newArray(int size) {
+            return new Trip[size];
+        }
+    };
 
     public long getTripId() {
         return tripId;
@@ -181,5 +212,27 @@ public class Trip implements Serializable, RealmModel {
                 ", busId=" + busId +
                 ", reservationCount=" + reservationCount +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(fromDate);
+        parcel.writeString(fromTime);
+        parcel.writeString(fromInfo);
+        parcel.writeString(toDate);
+        parcel.writeString(toTime);
+        parcel.writeString(toInfo);
+        parcel.writeString(info);
+        parcel.writeLong(tripId);
+        parcel.writeInt(reservationCount);
+        parcel.writeInt(busId);
+        parcel.writeParcelable(fromCity, i);
+        parcel.writeParcelable(toCity, i);
+
     }
 }

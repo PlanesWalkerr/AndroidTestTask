@@ -39,7 +39,7 @@ public class TripService extends Service {
     public static final String RESULT_EMPTY = "2";
 
     private final String BASE_URL = "http://projects.gmoby.org/web/index.php/";
-    private List<Trip> trips = new ArrayList<>();
+    private ArrayList<Trip> trips = new ArrayList<>();
     private Set<City> citySet = new HashSet<>();
     private Helper dbHelper;
     private String message = "";
@@ -48,8 +48,6 @@ public class TripService extends Service {
 
     @Override
     public void onCreate() {
-        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder().build();
-        Realm.setDefaultConfiguration(realmConfiguration);
 
         DBMS = new SettingsManager(getApplicationContext()).getDBMS();
 

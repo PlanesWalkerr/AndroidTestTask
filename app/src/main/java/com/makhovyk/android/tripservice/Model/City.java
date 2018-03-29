@@ -1,5 +1,8 @@
 package com.makhovyk.android.tripservice.Model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -10,7 +13,7 @@ import io.realm.RealmObject;
 import io.realm.annotations.RealmClass;
 
 @RealmClass
-public class City implements Serializable, RealmModel {
+public class City implements Serializable, Parcelable, RealmModel {
 
     @SerializedName("id")
     @Expose
@@ -85,4 +88,33 @@ public class City implements Serializable, RealmModel {
                 ((this.name == null) ? 0 : this.name.hashCode());
         return result;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+        parcel.writeLong(highlight);
+        parcel.writeLong(cityId);
+
+    }
+
+    public City(Parcel in) {
+        this.cityId = in.readLong();
+        this.highlight = in.readLong();
+        this.name = in.readString();
+    }
+
+    public static final Parcelable.Creator<City> CREATOR = new Parcelable.Creator<City>() {
+        public City createFromParcel(Parcel in) {
+            return new City(in);
+        }
+
+        public City[] newArray(int size) {
+            return new City[size];
+        }
+    };
 }

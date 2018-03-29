@@ -1,5 +1,6 @@
 package com.makhovyk.android.tripservice.Model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -12,9 +13,9 @@ public interface Helper {
 
     public void dropTables();
 
-    public List<Trip> getAllTrips();
+    public ArrayList<Trip> getAllTrips();
 
-    public void writeTrips(List<Trip> trips, Set<City> cities);
+    public void writeTrips(ArrayList<Trip> trips, Set<City> cities);
 
     public void closeConnection();
 

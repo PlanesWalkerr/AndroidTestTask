@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -66,7 +68,7 @@ public class DBHelper extends SQLiteOpenHelper implements Helper {
         onCreate(sqLiteDatabase);
     }
 
-    public List<Trip> getAllTrips() {
+    public ArrayList<Trip> getAllTrips() {
         Log.e("EE", "using sqlite");
         String sqlQuery = "select t._trip_id, c._id as from_city_id, " +
                 "c.name as from_city_name, c.highlight as from_city_hl, t.from_date, " +
@@ -79,7 +81,7 @@ public class DBHelper extends SQLiteOpenHelper implements Helper {
                 + "inner join cities as ct "
                 + "on t.to_city = ct._id ";
         Cursor tripCursor = this.getReadableDatabase().rawQuery(sqlQuery, null);
-        List<Trip> trips = new ArrayList<Trip>();
+        ArrayList<Trip> trips = new ArrayList<Trip>();
         if (tripCursor.moveToFirst()) {
             do {
                 int idIndex = tripCursor.getColumnIndex(TRIP_ID);
@@ -162,7 +164,7 @@ public class DBHelper extends SQLiteOpenHelper implements Helper {
     }
 
     @Override
-    public void writeTrips(List<Trip> trips, Set<City> cities) {
+    public void writeTrips(ArrayList<Trip> trips, Set<City> cities) {
         writeCities(cities);
         this.getWritableDatabase().beginTransaction();
         try {
