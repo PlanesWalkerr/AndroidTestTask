@@ -108,7 +108,6 @@ public class ListFragment extends Fragment {
         // Obtain the shared Tracker instance.
         application = TripServiceApp.getInstance();
         tracker = application.getDefaultTracker();
-        flag = true;
 
         Fabric.with(getActivity(), new Crashlytics());
 
@@ -152,7 +151,8 @@ public class ListFragment extends Fragment {
         //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
         dbHelper = application.getHelper(DBMS);
 
-        if (savedInstanceState != null) {
+
+        if (savedInstanceState != null && flag) {
             orientationChange = false;
             trips = savedInstanceState.getParcelableArrayList(TRIP_LIST_KEY);
             dbHelper = application.getHelper(DBMS);
@@ -178,6 +178,7 @@ public class ListFragment extends Fragment {
         }
         Log.e("EE", String.valueOf(trips.size()));
         setItems(trips);
+        flag = true;
         return view;
     }
 
@@ -245,6 +246,7 @@ public class ListFragment extends Fragment {
     public void onDestroy() {
         if (!orientationChange) {
             dbHelper.closeConnection();
+
         }
         super.onDestroy();
         unbinder.unbind();
@@ -427,4 +429,5 @@ public class ListFragment extends Fragment {
             orientationChange = true;
         }
     }
+
 }
