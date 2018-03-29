@@ -82,6 +82,9 @@ public class ListFragment extends Fragment {
     TripServiceApp application;
     private boolean orientationChange = false;
 
+    // falg to track if screen rotates or new activity starts
+    private boolean flag = false;
+
     // callback to start activity with trip details
     public interface Callbacks {
         void onTripSelected(Trip trip);
@@ -105,6 +108,7 @@ public class ListFragment extends Fragment {
         // Obtain the shared Tracker instance.
         application = TripServiceApp.getInstance();
         tracker = application.getDefaultTracker();
+        flag = true;
 
         Fabric.with(getActivity(), new Crashlytics());
 
@@ -137,6 +141,7 @@ public class ListFragment extends Fragment {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                flag = true;
                 disableUI();
                 dbHelper.closeConnection();
                 getActivity().startService(new Intent(getActivity(), TripService.class));
@@ -152,7 +157,7 @@ public class ListFragment extends Fragment {
             trips = savedInstanceState.getParcelableArrayList(TRIP_LIST_KEY);
             dbHelper = application.getHelper(DBMS);
             Log.e("EE", String.valueOf(trips.size()));
-            Log.e("EE", "retriving");
+            Log.e("EE", "retrieving");
 
 
         } else {
@@ -297,6 +302,7 @@ public class ListFragment extends Fragment {
         public void onClick(View view) {
             //show detail info about selected trip
             Log.i(TAG, "Trip selected");
+            flag = false;
             callbacks.onTripSelected(trip);
         }
     }
@@ -414,8 +420,11 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(TRIP_LIST_KEY, trips);
-        orientationChange = true;
+        if (flag) {
+            Log.e(TAG, "saving");
+            super.onSaveInstanceState(outState);
+            outState.putParcelableArrayList(TRIP_LIST_KEY, trips);
+            orientationChange = true;
+        }
     }
 }
