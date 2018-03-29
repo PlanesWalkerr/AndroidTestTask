@@ -63,6 +63,8 @@ public class TripFragment extends Fragment {
     @BindView(R.id.reservation_count_text_view)
     TextView reservationCountTextView;
 
+    private final String TRIP_KEY = "Trip";
+
     public static TripFragment newInstance(long id) {
         Bundle args = new Bundle();
         args.putLong(ARG_TRIP, id);
@@ -78,11 +80,16 @@ public class TripFragment extends Fragment {
 
         super.onCreate(savedInstanceState);
         SettingsManager settings = new SettingsManager(getActivity());
-        DBMS = settings.getDBMS();
-        id = (long) getArguments().getLong(ARG_TRIP);
-        TripServiceApp app = TripServiceApp.getInstance();
-        dbHelper = app.getHelper(DBMS);
-        trip = dbHelper.getTripById(id);
+        if (savedInstanceState == null) {
+            DBMS = settings.getDBMS();
+            id = (long) getArguments().getLong(ARG_TRIP);
+            TripServiceApp app = TripServiceApp.getInstance();
+            dbHelper = app.getHelper(DBMS);
+            trip = dbHelper.getTripById(id);
+        } else {
+            Log.e("SS", "retrieving");
+            trip = savedInstanceState.getParcelable(TRIP_KEY);
+        }
         //Log.e("EE", trip.toString());
     }
 
@@ -112,5 +119,9 @@ public class TripFragment extends Fragment {
         return v;
     }
 
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(TRIP_KEY, trip);
+    }
 }
