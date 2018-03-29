@@ -106,7 +106,9 @@ public class TripService extends Service {
 
                     @Override
                     public void onComplete() {
-                        dbHelper = HelperFactory.geHelper(getApplicationContext(), DBMS);
+                        // dbHelper = HelperFactory.geHelper(getApplicationContext(), DBMS);
+                        TripServiceApp app = TripServiceApp.getInstance();
+                        dbHelper = app.getHelper(DBMS);
                         if (!dbHelper.isEmpty()) {
                             dbHelper.dropTables();
                         }

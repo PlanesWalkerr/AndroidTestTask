@@ -8,7 +8,7 @@ import android.content.Context;
 
 public class HelperFactory {
 
-    public static Helper geHelper(Context context, String option) {
+    public static Helper getHelper(Context context, String option) {
         if (option.equals("sqlite")) {
             return new DBHelper(context);
         } else if (option.equals("realm")) {

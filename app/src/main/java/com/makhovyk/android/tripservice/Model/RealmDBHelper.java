@@ -76,4 +76,8 @@ public class RealmDBHelper implements Helper {
         realm.commitTransaction();
         return t;
     }
+
+    public boolean isClosed() {
+        return realm.isClosed();
+    }
 }

@@ -146,35 +146,48 @@ public class DBHelper extends SQLiteOpenHelper implements Helper {
     }
 
     public void writeCities(Set<City> cities) {
-        ContentValues cv = new ContentValues();
-        for (City c : cities) {
-            cv.put(DBHelper.CITY_ID, c.getCityId());
-            cv.put(DBHelper.CITY_HIGHLIGHT, c.getHighlight());
-            cv.put(DBHelper.CITY_NAME, c.getName());
-            this.getWritableDatabase().insert(DBHelper.TABLE_CITIES, null, cv);
+        this.getWritableDatabase().beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            for (City c : cities) {
+                cv.put(DBHelper.CITY_ID, c.getCityId());
+                cv.put(DBHelper.CITY_HIGHLIGHT, c.getHighlight());
+                cv.put(DBHelper.CITY_NAME, c.getName());
+                this.getWritableDatabase().insert(DBHelper.TABLE_CITIES, null, cv);
+            }
+            this.getWritableDatabase().setTransactionSuccessful();
+        } finally {
+            this.getWritableDatabase().endTransaction();
         }
     }
 
     @Override
     public void writeTrips(List<Trip> trips, Set<City> cities) {
         writeCities(cities);
-        ContentValues cv = new ContentValues();
-        for (Trip tr : trips) {
-            cv.put(DBHelper.TRIP_ID, tr.getTripId());
-            cv.put(DBHelper.FROM_CITY, tr.getFromCity().getCityId());
-            cv.put(DBHelper.FROM_DATE, tr.getFromDate());
-            cv.put(DBHelper.FROM_TIME, tr.getFromTime());
-            cv.put(DBHelper.FROM_INFO, tr.getFromInfo());
-            cv.put(DBHelper.TO_CITY, tr.getToCity().getCityId());
-            cv.put(DBHelper.TO_DATE, tr.getToDate());
-            cv.put(DBHelper.TO_TIME, tr.getToTime());
-            cv.put(DBHelper.TO_INFO, tr.getToInfo());
-            cv.put(DBHelper.INFO, tr.getInfo());
-            cv.put(DBHelper.PRICE, tr.getPrice());
-            cv.put(DBHelper.BUS_ID, tr.getBusId());
-            cv.put(DBHelper.RESERVATION_COUNT, tr.getReservationCount());
-            this.getWritableDatabase().insert(DBHelper.TABLE_TRIPS, null, cv);
+        this.getWritableDatabase().beginTransaction();
+        try {
+            ContentValues cv = new ContentValues();
+            for (Trip tr : trips) {
+                cv.put(DBHelper.TRIP_ID, tr.getTripId());
+                cv.put(DBHelper.FROM_CITY, tr.getFromCity().getCityId());
+                cv.put(DBHelper.FROM_DATE, tr.getFromDate());
+                cv.put(DBHelper.FROM_TIME, tr.getFromTime());
+                cv.put(DBHelper.FROM_INFO, tr.getFromInfo());
+                cv.put(DBHelper.TO_CITY, tr.getToCity().getCityId());
+                cv.put(DBHelper.TO_DATE, tr.getToDate());
+                cv.put(DBHelper.TO_TIME, tr.getToTime());
+                cv.put(DBHelper.TO_INFO, tr.getToInfo());
+                cv.put(DBHelper.INFO, tr.getInfo());
+                cv.put(DBHelper.PRICE, tr.getPrice());
+                cv.put(DBHelper.BUS_ID, tr.getBusId());
+                cv.put(DBHelper.RESERVATION_COUNT, tr.getReservationCount());
+                this.getWritableDatabase().insert(DBHelper.TABLE_TRIPS, null, cv);
+            }
+            this.getWritableDatabase().setTransactionSuccessful();
+        } finally {
+            this.getWritableDatabase().endTransaction();
         }
+
     }
 
     @Override

@@ -80,7 +80,8 @@ public class TripFragment extends Fragment {
         SettingsManager settings = new SettingsManager(getActivity());
         DBMS = settings.getDBMS();
         id = (long) getArguments().getLong(ARG_TRIP);
-        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+        TripServiceApp app = TripServiceApp.getInstance();
+        dbHelper = app.getHelper(DBMS);
         trip = dbHelper.getTripById(id);
         //Log.e("EE", trip.toString());
     }

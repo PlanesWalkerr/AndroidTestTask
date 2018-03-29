@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -30,7 +28,6 @@ import android.widget.TextView;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.makhovyk.android.tripservice.Model.DBHelper;
 import com.makhovyk.android.tripservice.Model.Helper;
 import com.makhovyk.android.tripservice.Model.HelperFactory;
 import com.makhovyk.android.tripservice.Model.MessageEvent;
@@ -56,7 +53,6 @@ public class ListFragment extends Fragment {
 
     private final String TAG = "TripLog";
 
-    private BroadcastReceiver broadcastReceiver;
     private String resultMessage;
     private Helper dbHelper;
     private List<Trip> trips = new ArrayList<Trip>();
@@ -81,6 +77,7 @@ public class ListFragment extends Fragment {
 
     private Callbacks callbacks;
     private Tracker tracker;
+    TripServiceApp application;
 
     // callback to start activity with trip details
     public interface Callbacks {
@@ -102,10 +99,8 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
 
-        //dbHelper = new DBHelper(getActivity());
-        //dbHelper = HelperFactory.geHelper(getActivity(), "sqlite");
         // Obtain the shared Tracker instance.
-        AnalyticsApplication application = (AnalyticsApplication) getActivity().getApplication();
+        application = TripServiceApp.getInstance();
         tracker = application.getDefaultTracker();
 
         Fabric.with(getActivity(), new Crashlytics());
@@ -119,12 +114,9 @@ public class ListFragment extends Fragment {
         DBMS = settings.getDBMS();
 
         FileLogger.logInFile(TAG, "current db: " + DBMS, getActivity());
-        Realm.init(getActivity());
-        RealmConfiguration config = new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
-        Realm.setDefaultConfiguration(config);
-        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
 
-        setRetainInstance(true);
+
+        //setRetainInstance(true);
         super.onCreate(savedInstanceState);
 
     }
@@ -134,12 +126,9 @@ public class ListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_list, container, false);
         unbinder = ButterKnife.bind(this, view);
-        //tripsRecyclerView = view.findViewById(R.id.trips_recycler_view);
         tripsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        //progressMessage = view.findViewById(R.id.progress_message_text_view);
         progressMessage.setText(getResources().getString(R.string.progress_message));
-        // messageEmpty = view.findViewById(R.id.message_empty_text_view);
-        //swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+
 
         //disabling UI and starting API request on swipe down
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -152,6 +141,9 @@ public class ListFragment extends Fragment {
 
         });
 
+        //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+        dbHelper = application.getHelper(DBMS);
+
 
         //check, if db has stored data. If no, making API request
         if (dbHelper.isEmpty()) {
@@ -159,7 +151,7 @@ public class ListFragment extends Fragment {
             Log.e("EE", "Empty");
             disableUI();
             dbHelper.closeConnection();
-            dbHelper = null;
+            //dbHelper = null;
             getActivity().startService(new Intent(getActivity(), TripService.class));
         } else {
             Log.e("EE", "not empty");
@@ -203,7 +195,8 @@ public class ListFragment extends Fragment {
                 }
                 settings.setDBMS(DBMS);
 
-                dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+                //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+                dbHelper = application.getHelper(DBMS);
                 disableUI();
                 dbHelper.closeConnection();
                 getActivity().startService(new Intent(getActivity(), TripService.class));
@@ -223,15 +216,12 @@ public class ListFragment extends Fragment {
                 .setAction("Share")
                 .build());
 
-        // registering receiver to get data from service
-        //  getActivity().registerReceiver(broadcastReceiver, new IntentFilter(TripService.NOTIFICATION));
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        // getActivity().unregisterReceiver(broadcastReceiver);
     }
 
     @Override
@@ -367,7 +357,7 @@ public class ListFragment extends Fragment {
     @Subscribe
     public void onEvent(MessageEvent event) {
         //receiving message from service
-        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+        dbHelper = application.getHelper(DBMS);
         resultMessage = event.message;
         switch (resultMessage) {
             //if OK, reading data from db and setting adapter
@@ -405,6 +395,6 @@ public class ListFragment extends Fragment {
                 break;
         }
         enableUI();
-        dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
+        //dbHelper = HelperFactory.geHelper(getActivity(), DBMS);
     }
 }
